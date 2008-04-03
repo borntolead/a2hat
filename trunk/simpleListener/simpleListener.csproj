@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{46EA71C1-E445-43DB-B642-611B1875DBB9}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>libhat</RootNamespace>
-    <AssemblyName>libhat</AssemblyName>
+    <RootNamespace>simpleListener</RootNamespace>
+    <AssemblyName>simpleListener</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,9 +33,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Consts.cs" />
-    <Compile Include="NetworkHelper.cs" />
+    <Compile Include="enums.cs" />
+    <Compile Include="PacketStructure.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libhat\libhat\libhat.csproj">
+      <Project>{46EA71C1-E445-43DB-B642-611B1875DBB9}</Project>
+      <Name>libhat</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
