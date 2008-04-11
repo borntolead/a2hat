@@ -1,0 +1,10 @@
+#summary Описание Milestones
+#labels Phase-Requirements,Phase-Implementation
+
+= Introduction =
+Milestones:
+
+
+==minialRelease==
+
+релиз с минимальной функциональностью. умеет хранить информацию об игроках, и соединять их с игровым сервером/серверами.
