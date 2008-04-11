@@ -55,7 +55,7 @@ namespace libhat {
 
         }
 
-        public static byte[] PacketEncoding(byte[] incoming, int offset) {
+        public static byte[] PacketEncoding(byte[] incoming, long offset) {
             byte[] encoded = new byte[incoming.Length];
             int k = 0;
             for ( long i = offset; k < incoming.Length; i++ ) {
@@ -66,8 +66,13 @@ namespace libhat {
             return encoded;
         }
 
-        public static byte[] PacketDecoding( byte[] incoming, int offset ) {
+        public static byte[] PacketDecoding( byte[] incoming, long offset ) {
             byte[] decoded = new byte[incoming.Length];
+
+            if( incoming.Length > 80 ) {
+                throw new ArgumentOutOfRangeException( "packet must be <= 80" );
+            }
+
             int k = 0;
             for ( long i = offset; k < incoming.Length; i++ ) {
                 decoded[k] = (byte)( incoming[i] ^ Consts.Passphrase[k] );
