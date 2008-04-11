@@ -1,7 +1,13 @@
 
+using System;
+
 namespace libhat {
     public class Consts {
-        private static byte[] passphrase = new byte[]{
+
+        /// <summary>
+        /// passphrase to encode/decode information sending between client and hat
+        /// </summary>
+        private static readonly byte[] passphrase = new byte[]{
             0x2E, 0xC7, 0xC4, 0x8D, 0xFF, 0xE5, 0x5D, 0x0B, 0xD6, 0xFF, 0x7F, 0xFF, 0xD7, 0x34, 0xD2, 0x02,
             0xE2, 0x6D, 0x9E, 0x48, 0x7B, 0xC6, 0x6A, 0xF1, 0x97, 0x73, 0x56, 0x77, 0xFA, 0x9D, 0x80, 0x00,
             0x11, 0x04, 0x29, 0x08, 0xA6, 0x8B, 0x2A, 0x47, 0x64, 0x00, 0x01, 0x38, 0x84, 0xA0, 0x40, 0x69,
@@ -9,9 +15,50 @@ namespace libhat {
             0x44, 0x74, 0xA3, 0x09, 0x79, 0x40, 0x38, 0x3A, 0x20, 0x5D, 0xA3, 0x40, 0xC3, 0xE8, 0x7F, 0x3B
         };
 
+        /// <summary>
+        /// Example of successful response. Encoded.
+        /// </summary>
+        private static readonly byte[] successfulResponse =
+            new byte[]
+                {
+                    0x0e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xe0, 0xc3, 0xc4, 0x8d, 0xff, 0x0d, 0x5e, 0x0b, 0xd6,
+                    0x9b, 0x7e, 0xff, 0xd7, 0x34
+                };
 
+        /// <summary>
+        /// Tail of any packet between hat and client
+        /// </summary>
+        private static readonly byte[] packetEnding = new byte[] {0x0, 0x64, 0x1, 0x0,0x0,0x0 };
+
+        /// <summary>
+        /// Example of successful response. Encoded.
+        /// </summary>
+        public static byte[] SuccessfulResponse {
+            get { return successfulResponse; }
+        }
+
+        /// <summary>
+        /// passphrase to encode/decode information sending between client and hat
+        /// </summary>
         public static byte[] Passphrase {
             get { return passphrase; }
+        }
+
+        /// <summary>
+        /// Tail of any packet between hat and client
+        /// </summary>
+        public static byte[] PacketEnding {
+            get { return packetEnding; }
+        }
+
+        public static int PacketMaxLength {
+            get { return 0x8E ; }
+        }
+
+        public static Int32 HatIdentifier {
+            get {
+                return 0x123;
+            }
         }
     }
 }

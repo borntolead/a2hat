@@ -34,7 +34,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Consts.cs" />
+    <Compile Include="enums.cs" />
+    <Compile Include="HatServer.cs" />
     <Compile Include="NetworkHelper.cs" />
+    <Compile Include="PacketStructure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
