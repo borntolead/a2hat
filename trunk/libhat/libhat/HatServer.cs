@@ -5,13 +5,47 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using libhat.DBFactory;
 
 namespace libhat {
     public class HatServer {
         public event EventHandler ClientConnected;
-        private Thread listenerThread;
+        private Thread listenClientsThread;
+        private Thread listenServersThread;
+        private IDBFactory factory;
+
+        #region Critical lists
+        List<GameServer> registeredServers = new List<GameServer>( );
+        #endregion
+
+        /// <summary>
+        /// Calling when hat handling inner exceptions and send other information
+        /// </summary>
+        public event HatEvent EventOccured;
 
         private bool exitCalled = false;
+
+        public bool Configure( string pathToConfig ) {
+            return Configure( getConfiguration( pathToConfig ) );
+        }
+
+        private HatConfiguration getConfiguration( string config ) {
+            return null;
+        }
+
+        public bool Configure(HatConfiguration conf) {
+            return false;
+        }
+
+        private void LogEvent( EventType type, Exception ex, string formatMessage, params object[] formatMessageArgs) {
+            if( EventOccured != null ) {
+                EventOccured( this, new HatEventArgs( type, String.Format( formatMessage, formatMessageArgs ), ex ) );
+            }            
+        }
+
+        private void LogEvent(EventType type, string formatMessage, params object[] formatMessageArgs) {
+            LogEvent( type, null, formatMessage, formatMessageArgs );
+        }
 
         /// <summary>
         /// Start an hat instance on specified IP and port
@@ -24,14 +58,16 @@ namespace libhat {
             IPEndPoint ep = new IPEndPoint( IPAddress.Parse( ip_address ), port );
             ThreadPool.SetMinThreads( 5, 2 );
             //TODO configuring from file
+            Db4oFactory.Configure(  );
+            factory = Db4oFactory.GetInstance();
 
             listener = NetworkHelper.GetNewIPv4Socket( ep );
             listener.Listen( 10 );
             
             ParameterizedThreadStart lthread = new ParameterizedThreadStart( listenerThreadStartMethod );
-            listenerThread = new Thread( lthread );
-            listenerThread.IsBackground = true;
-            listenerThread.Start( listener );
+            listenClientsThread = new Thread( lthread );
+            listenClientsThread.IsBackground = true;
+            listenClientsThread.Start( listener );
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler( Console_CancelKeyPress );
 
@@ -42,7 +78,7 @@ namespace libhat {
                 Thread.Sleep( 100 );
             }
 
-            listenerThread.Abort( );
+            listenClientsThread.Abort( );
             
             return true;
         }
@@ -99,16 +135,20 @@ namespace libhat {
                                       (int) br.BaseStream.Position,
                                       decoded, 0, (int) packetLength );
                     decoded = NetworkHelper.PacketDecoding( decoded );
-
+                    NetworkHelper.DumpArray( Console.OpenStandardOutput(), decoded );
                     object packet = PacketParse( decoded );
                     byte[] response = ProcessPacket( packet );
 
                     Console.WriteLine( "response:" );
+
                     NetworkHelper.DumpArray( Console.OpenStandardOutput(), response );
-
-
                     NetworkHelper.DumpArray( Console.OpenStandardOutput(), PrepareMessageToSend( response ) );
-                    handler.Send( PrepareMessageToSend( response ) );
+
+                    try {
+                        handler.Send( PrepareMessageToSend( response ) );
+                    } catch ( Exception ex ) {
+                        LogEvent( EventType.ERROR, ex, "send failed" );
+                    }
                 }
                         
             }
@@ -119,7 +159,7 @@ namespace libhat {
         /// </summary>
         /// <param name="packet"> return response to recived packet</param>
         /// <returns></returns>
-        private byte[] ProcessPacket( object packet ) {
+        protected byte[] ProcessPacket( object packet ) {
             if( packet is LoginPacket ) {
                 LoginPacket pack = (LoginPacket) packet;
                 if( LoginUser(pack.login, pack.password)) {
@@ -132,6 +172,10 @@ namespace libhat {
             if( packet is Client_message ) {
                 Client_message mess = (Client_message)packet;
                 return processClientMessage( Client_operation.M_CHECK_NICKNAME, mess, null );
+            }
+
+            if( packet is Client_operation ) {
+                return GetServersList();
             }
 
             return null;
@@ -160,9 +204,9 @@ namespace libhat {
         /// </summary>
         /// <param name="pack">user's credentials</param>
         /// <returns> byte array represents list of user's characters</returns>
-        private byte[] GetCharacterList( LoginPacket pack) {
+        protected byte[] GetCharacterList( LoginPacket pack ) {
 
-            List<HatUser> characters = getCharacterList(pack.login);
+            IList<HatCharacter> characters = getCharacterList(pack.login);
 
             byte[] chars = new byte[characters.Count * 8 + 9];
             using( MemoryStream mem = new MemoryStream( chars)) {
@@ -171,20 +215,89 @@ namespace libhat {
                 bw.Write( (byte)0xCE );
                 bw.Write( (characters.Count * 8) + 4);
                 bw.Write( Consts.HatIdentifier );
-                foreach ( HatUser user in characters ) {
-                    bw.Write( user.UserID );
+                foreach ( HatCharacter user in characters ) {
+                    bw.Write( user.CharacterID );
                 }
                 
             }
 
             return chars;
-
-            //return new byte[]{0xCE, 0x04, 0x00, 0x00, 0x00, 0xe8, 0x03, 0x00, 0x00};
         }
 
-        // get characters of user from storage
-        private List<HatUser> getCharacterList( string login ) {
-            return new List<HatUser>();
+        /// <summary>
+        /// Gets registred and available servers list
+        /// </summary>
+        /// <returns></returns>
+        protected byte[] GetServersList () {
+            IList<GameServer> servers = getServerList();
+
+            byte[] message = new byte[1+ 0xFF + servers.Count*0x64];
+            long bytesWritten = 0;
+            using( MemoryStream mem = new MemoryStream( message )) {
+                BinaryWriter bw = new BinaryWriter( mem );
+                
+                bw.Write( (byte)0xCD);
+                bw.Write( Int32.MaxValue );
+
+                long begin = bw.BaseStream.Position;
+
+                lock ( registeredServers ) {
+                    char[] mess = String.Format( "CURRENTCOUNT|{0:D2}$BREAK\nTOTALSERVERS|{1:D2}$BREAK\n\n", servers.Count, registeredServers.Count ).ToCharArray(); 
+                    bw.Write( mess );
+                }
+                
+                foreach ( GameServer server in servers ) {
+                    TimeSpan span = DateTime.Now - server.StartTime;
+                    IPEndPoint point = ( server.EndPoint as IPEndPoint ) ?? new IPEndPoint( IPAddress.Parse("127.0.0.1"), 8081);
+
+                    bw.Write( 
+                        String.Format( 
+                            "|[{0:D}:{1:F2}] {2}|1.02|{3}|{4:D}x{5:D}|{6:D}|{7:D}|{8}\n" 
+                            , span.Hours
+                            , span.Minutes
+                            , server.ServerName
+                            , server.Map.Name
+                            , server.Map.Width
+                            , server.Map.Height
+                            , server.Map.Difficulty
+                            , server.PlayersCount
+                            , point.Address
+                        )
+                    );
+                }
+                bytesWritten = bw.BaseStream.Position - begin;
+                
+                bw.Seek( 1, SeekOrigin.Begin );
+                bw.Write( (int)bytesWritten );
+
+                bw.Flush();
+            }
+
+            Array.Resize<byte>( ref message, (int)bytesWritten + 5 );
+
+            return message;
+        }
+
+        /// <summary>
+        /// get characters of user from storage
+        /// </summary>
+        /// <param name="login"></param>
+        /// <returns></returns>
+        private IList<HatCharacter> getCharacterList( string login ) {
+            HatUser user = factory.LookupFirst<HatUser>( new SelectByCodeCondition( login ) );
+            if ( user == null ) {
+                return new List<HatCharacter>();
+            }
+
+            return user.CharacterList;
+        }
+
+        /// <summary>
+        /// get registered servers list
+        /// </summary>
+        /// <returns></returns>
+        private IList<GameServer> getServerList() {
+            return factory.Lookup<GameServer>( new SelectAllCondition() );
         }
 
         /// <summary>
@@ -192,15 +305,47 @@ namespace libhat {
         /// </summary>
         /// <param name="handler"></param>
         /// <param name="message"></param>
-        private void SendPacketToClient(Socket handler, object message) {
+        protected void SendPacketToClient( Socket handler, object message ) {
             
         }
 
-        private bool LoginUser( string login, string password ) {
+        protected bool LoginUser( string login, string password ) {
+            HatUser u = factory.LookupFirst<HatUser>( new SelectByCodeCondition( login ) );
+            if ( u != null && !u.IsLocked && !u.UserLoggedIn && u.Password == password ) {
+                u.UserLoggedIn = true;
+
+                factory.Save<HatUser>( u );
+
+                return true;
+            }
+            if( u == null /*&& conf.IsRegistrationAllowed*/) {
+                u = new HatUser();
+                u.Login = login;
+                u.Password = password;
+                u.IsLocked = false;
+                u.UserLoggedIn = true;
+
+                factory.Save<HatUser>( u );
+                return true;
+            }
+            return false;
+        }
+
+        protected bool LogoutUser( string login) {
+            HatUser u = factory.LookupFirst<HatUser>( new SelectByCodeCondition( login ) );
+
+            if( u.UserLoggedIn == false ) {
+                return false;
+            }
+
+            u.UserLoggedIn = false;
+
+            factory.Save<HatUser>( u );
+
             return true;
         }
 
-        private object PacketParse( byte[] decoded ) {
+        protected object PacketParse( byte[] decoded ) {
             object ret = null;
 
             using ( MemoryStream mem = new MemoryStream( decoded ) ) {
@@ -211,8 +356,7 @@ namespace libhat {
                     case 0xc9: //login
                     {
                         LoginPacket lp = new LoginPacket();
-                        NetworkHelper.DumpArray( Console.OpenStandardOutput(), decoded );
-
+                        
                         byte loginlen = br.ReadByte();
                         lp.GameType = (GameType) br.ReadInt16();
                         byte loginOffset = br.ReadByte();
@@ -227,14 +371,7 @@ namespace libhat {
                         Console.WriteLine( "GameType: {0}", lp.GameType.ToString() );
                         Console.WriteLine( "Login: {0}", lp.login );
                         Console.WriteLine( "Password: {0}\n", lp.password );
-                        Console.WriteLine( "------unparsed data--------------" );
-                        NetworkHelper.DumpArray( Console.OpenStandardOutput(),
-                                                 br.ReadBytes( (int) ( decoded.Length - mem.Position ) ) );
-                        Console.WriteLine( "---------------------------------" );
-                        ret = lp;
-
-
-                        break;
+                        return lp;
                     }
                     case 0x4e: //check nickname
                     {
@@ -243,6 +380,10 @@ namespace libhat {
                         br.BaseStream.Seek( 1, SeekOrigin.Current );
                         string nickname = Encoding.Default.GetString(br.ReadBytes(length));
                         return check_nickname( nickname );
+                    }
+                    case 0xC8: {
+                        return Client_operation.M_GET_SERVER_LIST;
+                        break;
                     }
                 default:
                         ret = null;
@@ -256,7 +397,9 @@ namespace libhat {
         }
 
         private Client_message check_nickname( string nickname ) {
-            if( nickname == "test") {
+            List<HatCharacter> lst = new List<HatCharacter>(factory.Lookup<HatCharacter>( new SelectAllCondition() ));
+
+            if ( lst.Exists( delegate( HatCharacter ch ) { return ch.Nickname == nickname; } ) ) {
                 return Client_message.M_ALREADY_EXISTS;
             }
 
@@ -268,7 +411,7 @@ namespace libhat {
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        private byte[] PrepareMessageToSend(byte[] message) {
+        protected byte[] PrepareMessageToSend( byte[] message ) {
 
             if( message == null ) {
                 throw new ArgumentNullException( "cannot send null packet" );
@@ -310,6 +453,69 @@ namespace libhat {
 
             return packet;
         }
+    }
 
+    public delegate void HatEvent( object sender, HatEventArgs args );
+
+    [Serializable]
+    public class HatEventArgs {
+        /// <summary>
+        /// type of event
+        /// </summary>
+        private EventType type;
+
+        /// <summary>
+        /// Text message
+        /// </summary>
+        private string message;
+
+        /// <summary>
+        /// handled exception
+        /// </summary>
+        private Exception ex;
+
+        public HatEventArgs() {}
+
+        public HatEventArgs( EventType type, string message, Exception ex ) {
+            this.type = type;
+            this.message = message;
+            this.ex = ex;
+        }
+
+        public HatEventArgs( EventType type, string message ) {
+            this.type = type;
+            this.message = message;
+        }
+
+        /// <summary>
+        /// type of event
+        /// </summary>
+        public EventType Type {
+            get { return type; }
+            set { type = value; }
+        }
+
+        /// <summary>
+        /// Text message
+        /// </summary>
+        public string Message {
+            get { return message; }
+            set { message = value; }
+        }
+
+        /// <summary>
+        /// handled exception
+        /// </summary>
+        public Exception Ex {
+            get { return ex; }
+            set { ex = value; }
+        }
+    }
+
+    public enum EventType {
+        ERROR
+        , INFORMATION
+        , WARNING
+        , DEBUG
     }
 }

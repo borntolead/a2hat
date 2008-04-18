@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using libhat.DBFactory;
 
 namespace libhat {
-    public class GameServer {
+    [Serializable]
+    public class GameServer :IEntity {
         /// <summary>
         /// Server Name
         /// </summary>
@@ -25,6 +27,17 @@ namespace libhat {
         /// </summary>
         private EndPoint endPoint;
 
+        /// <summary>
+        /// is this server available for player connection
+        /// </summary>
+        private bool isActive;
+
+        /// <summary>
+        /// Time when server started
+        /// </summary>
+        private DateTime startTime;
+
+        private string code;
 
         /// <summary>
         /// Server Name
@@ -33,6 +46,15 @@ namespace libhat {
             get { return serverName; }
             set { serverName = value; }
         }
+
+        #region IEntity Members
+
+        public string Code {
+            get { return code; }
+            set { code = value; }
+        }
+
+        #endregion
 
         /// <summary>
         /// Current server map
@@ -56,6 +78,22 @@ namespace libhat {
         public EndPoint EndPoint {
             get { return endPoint; }
             set { endPoint = value; }
+        }
+
+        /// <summary>
+        /// is this server available for player connection
+        /// </summary>
+        public bool IsActive {
+            get { return isActive; }
+            set { isActive = value; }
+        }
+
+        /// <summary>
+        /// Time when server started
+        /// </summary>
+        public DateTime StartTime {
+            get { return startTime; }
+            set { startTime = value; }
         }
     }
 }

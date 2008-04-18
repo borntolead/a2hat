@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using libhat.DBFactory;
 
 namespace libhat {
-    public class GameMap {
+    [Serializable]
+    public class GameMap : IEntity {
         /// <summary>
         /// Map name
         /// </summary>
@@ -24,6 +26,16 @@ namespace libhat {
         /// </summary>
         private int y;
 
+        private string code;
+
+        #region IEntity Members
+
+        public string Code {
+            get { return code; }
+            set { code = value; }
+        }
+
+        #endregion
 
         /// <summary>
         /// Map name

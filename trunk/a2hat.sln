@@ -24,6 +24,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "simpleListener", "simpleLis
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libhat.Testing", "libhat.Testing\libhat.Testing.csproj", "{AFDEA22E-7B39-47BA-B92F-027F271CD736}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +44,10 @@ Global
 		{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

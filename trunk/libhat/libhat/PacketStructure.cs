@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace libhat {
-    public interface PacketInterface {
+    public interface IHatEntity : ISerializable {
 
         /// <summary>
-        /// Function for transform packet to byte array
+        /// 
         /// </summary>
         /// <returns>byte array of packet</returns>
         byte[] ToArray();

@@ -42,8 +42,9 @@ namespace libhat {
     };
 
     enum Client_operation {
-        M_CHECK_NICKNAME = 0xDF,
-        M_SEND_MESSAGE   = 0x0B
+        M_CHECK_NICKNAME  = 0xDF,
+        M_SEND_MESSAGE    = 0x0B,
+        M_GET_SERVER_LIST = 0xC8
     }
 
     public enum Difficulty {
