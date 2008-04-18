@@ -59,7 +59,8 @@ namespace libhat {
             byte[] encoded = new byte[incoming.Length];
             int k = 0;
             for ( long i = offset; k < incoming.Length; i++ ) {
-                encoded[k] = (byte)( incoming[i] ^ Consts.Passphrase[k] );
+                int l = k < Consts.Passphrase.Length ? k : k % Consts.Passphrase.Length;
+                encoded[k] = (byte)( incoming[i] ^ Consts.Passphrase[l] );
                 k++;
             }
 

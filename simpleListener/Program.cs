@@ -26,11 +26,12 @@ namespace simpleListener {
             }
            
             HatServer srv = new HatServer();
-
+            srv.EventOccured += new HatEvent( srv_EventOccured );
             srv.Start( "127.0.0.1", 8000 );
+        }
 
-            
-            
+        static void srv_EventOccured( object sender, HatEventArgs args ) {
+            Console.WriteLine( "[{0}]: {1}\n innerException: {2}", args.Type, args.Message , args.Ex );
         }
 
         

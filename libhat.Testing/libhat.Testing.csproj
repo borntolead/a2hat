@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{46EA71C1-E445-43DB-B642-611B1875DBB9}</ProjectGuid>
+    <ProjectGuid>{AFDEA22E-7B39-47BA-B92F-027F271CD736}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>libhat</RootNamespace>
-    <AssemblyName>libhat</AssemblyName>
+    <RootNamespace>libhat.Testing</RootNamespace>
+    <AssemblyName>libhat.Testing</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,42 +28,31 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BerkeleyDb.Utils45, Version=0.8.1.25566, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="nunit.core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Libs\BerkeleyDb.Utils45.dll</HintPath>
+      <HintPath>..\Libs\nunit.core.dll</HintPath>
     </Reference>
-    <Reference Include="Db4objects.Db4o, Version=6.4.38.10595, Culture=neutral, PublicKeyToken=6199cd4f203aa8eb, processorArchitecture=MSIL">
+    <Reference Include="nunit.core.interfaces, Version=2.4.1.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Libs\db4o\Db4objects.Db4o.dll</HintPath>
+      <HintPath>..\Libs\nunit.core.interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Kds.Serialization, Version=0.8.1.25565, Culture=neutral, PublicKeyToken=07e6449d79bffb34, processorArchitecture=MSIL">
+    <Reference Include="nunit.framework, Version=2.4.1.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Libs\Kds.Serialization.dll</HintPath>
-    </Reference>
-    <Reference Include="libdb_dotNET45, Version=0.9.5.25563, Culture=neutral, PublicKeyToken=0f0d57806cebdc08, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Libs\libdb_dotNET45.dll</HintPath>
+      <HintPath>..\Libs\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Consts.cs" />
-    <Compile Include="DBFactory\Condition.cs" />
-    <Compile Include="DBFactory\Db4oFactory.cs" />
-    <Compile Include="DBFactory\IDBInterface.cs" />
-    <Compile Include="enums.cs" />
-    <Compile Include="GameMap.cs" />
-    <Compile Include="GameServer.cs" />
-    <Compile Include="HatCharacter.cs" />
-    <Compile Include="HatConfiguration.cs" />
-    <Compile Include="HatServer.cs" />
-    <Compile Include="HatUser.cs" />
-    <Compile Include="NetworkHelper.cs" />
-    <Compile Include="PacketStructure.cs" />
+    <Compile Include="db4oTesting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RWLock.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libhat\libhat\libhat.csproj">
+      <Project>{46EA71C1-E445-43DB-B642-611B1875DBB9}</Project>
+      <Name>libhat</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
