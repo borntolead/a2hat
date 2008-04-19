@@ -117,6 +117,7 @@ namespace libhat {
                 try {
                     bytesRec = handler.Receive( buf );
                 } catch( Exception ex) {
+                    LogEvent( EventType.DEBUG, ex, "recieve failed" );
                     Thread.CurrentThread.Abort( );
                 }
 
