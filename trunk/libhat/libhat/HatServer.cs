@@ -312,7 +312,7 @@ namespace libhat {
         protected bool LoginUser( string login, string password ) {
             HatUser u = factory.LookupFirst<HatUser>( new SelectByCodeCondition( login ) );
             if ( u != null && !u.IsLocked && !u.UserLoggedIn && u.Password == password ) {
-                u.UserLoggedIn = true;
+                //u.UserLoggedIn = true;
 
                 factory.Save<HatUser>( u );
 
@@ -323,7 +323,7 @@ namespace libhat {
                 u.Login = login;
                 u.Password = password;
                 u.IsLocked = false;
-                u.UserLoggedIn = true;
+                //u.UserLoggedIn = true;
 
                 factory.Save<HatUser>( u );
                 return true;
