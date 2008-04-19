@@ -50,17 +50,32 @@ namespace libhat.DBFactory {
                 case "SELECT_ALL":
                     result.AddRange( dbInstance.Query<T>() );
                     break;
-                case "SELECT_BY_CODE":
-
+                case "SELECT_BY_CODE": {
                     SelectByCodeCondition cond = condition as SelectByCodeCondition;
 
                     if ( cond == null ) {
                         throw new InvalidDataException( String.Format( "Invalid {0} condition", condition.Name ) );
                     }
-                    IList<T> res = dbInstance.Query<T>(delegate (T t){ return cond.Codes.Contains( t.Code ); }) ;
+                    IList<T> res = dbInstance.Query<T>( delegate( T t ) { return cond.Codes.Contains( t.Code ); } );
 
                     result.AddRange( res );
                     break;
+                }
+                case "SELECT_CHARACTER_BY_PARENT": {
+                    SelectCharacterByParentCondition cond = condition as SelectCharacterByParentCondition;
+
+                    if ( cond == null ) {
+                        throw new InvalidDataException( String.Format( "Invalid {0} condition", condition.Name ) );
+                    }
+
+                    if ( Equals( typeof( T ), typeof( HatCharacter ) ) == false ) {
+                        throw new ArgumentException();
+                    }
+                    IList<HatCharacter> res = dbInstance.Query<HatCharacter>( delegate( HatCharacter t ) { return cond.ParentCode == t.ParentUserCode; } );
+
+                    result.AddRange( (IList<T>)res );
+                    break;
+                }
                 default:
                     throw new NotImplementedException( String.Format( "Condition {0} is not implemented", condition.Name ) );
             }

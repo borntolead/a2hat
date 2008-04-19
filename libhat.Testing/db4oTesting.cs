@@ -21,7 +21,6 @@ namespace libhat.Testing {
 
             chr.CharacterID = 1;
             chr.CharacterData = new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-            chr.ParentUserID = 0xfa;
             chr.Code = "testing";
 
             factory.Save( chr );
@@ -30,12 +29,40 @@ namespace libhat.Testing {
 
             Assert.AreEqual( chr.CharacterID, getChr.CharacterID );
             Assert.AreEqual( chr.CharacterData, getChr.CharacterData );
-            Assert.AreEqual( chr.ParentUserID, getChr.ParentUserID );
+            Assert.AreEqual( chr.ParentUserCode, getChr.ParentUserCode );
+        }
+
+        [Test]
+        public void ListAndLookupTest() {
+            HatUser usr = new HatUser();
+            usr.Code = "newCharacter";
+            usr.IsLocked = false;
+            usr.Login = "login1";
+            usr.Password = "login1";
+            usr.UserLoggedIn = false;
+
+            HatCharacter chr = new HatCharacter();
+
+            chr.CharacterID = 1;
+            chr.CharacterData = new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+            chr.ParentUser = usr;
+            chr.Code = "testing1";
+
+            factory.Save( usr );
+            factory.Save( chr );
+
+            HatUser getUsr = factory.LookupFirst<HatUser>( new SelectByCodeCondition( "login1" ) );
+
+            HatCharacter getChr = getUsr.CharacterList[0];
+
+            Assert.AreEqual( chr.CharacterID, getChr.CharacterID );
+            Assert.AreEqual( chr.CharacterData, getChr.CharacterData );
+            Assert.AreEqual( chr.ParentUser, getChr.ParentUser );
         }
 
         [TearDown]
         public void Teardown() {
-            
+            factory.Dispose();
         }
     }
 }

@@ -10,7 +10,6 @@ namespace libhat {
         private string login;
         private string password;
         private bool isLocked;
-        private List<HatCharacter> characterList;
         private bool userLoggedIn;
 
         #region IEntity Members
@@ -42,9 +41,8 @@ namespace libhat {
             set { isLocked = value; }
         }
         
-        public List<HatCharacter> CharacterList {
-            get { return characterList; }
-            set { characterList = value; }
+        public IList<HatCharacter> CharacterList {
+            get { return Db4oFactory.GetInstance().Lookup<HatCharacter>( new SelectCharacterByParentCondition( login ) ); }
         }
 
 
@@ -52,17 +50,25 @@ namespace libhat {
             get { return userLoggedIn; }
             set { userLoggedIn = value; }
         }
+    }
 
-        ///<summary>
-        ///Serves as a hash function for a particular type. <see cref="M:System.Object.GetHashCode"></see> is suitable for use in hashing algorithms and data structures like a hash table.
-        ///</summary>
-        ///
-        ///<returns>
-        ///A hash code for the current <see cref="T:System.Object"></see>.
-        ///</returns>
-        ///<filterpriority>2</filterpriority>
-        public override int GetHashCode() {
-            return login.GetHashCode();
+    public class SelectCharacterByParentCondition : ICondition {
+        private string parentCode;
+        public SelectCharacterByParentCondition( string parentCode ) {
+            this.parentCode = parentCode;
         }
+
+        public string ParentCode {
+            get { return parentCode; }
+            set { parentCode = value; }
+        }
+
+        #region ICondition Members
+
+        public string Name {
+            get { return "SELECT_CHARACTER_BY_PARENT"; }
+        }
+
+        #endregion
     }
 }
