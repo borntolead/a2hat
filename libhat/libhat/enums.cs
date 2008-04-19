@@ -9,6 +9,12 @@ namespace libhat {
         , Cooperative = 0x0200
     }
 
+    public enum ServerType {
+        DEATHMATCH  = 0x01,
+        TEAMPLAY    = 0x00,
+        COOPERATIVE = 0x02
+    }
+
     enum Client_message {
         M_ALL_OK = 0x00,
         M_SERVER_ERROR = 0x03,//4: Невозможно подключиться к серверу. Проверьте правильность URL.
