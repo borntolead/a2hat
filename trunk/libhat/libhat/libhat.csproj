@@ -59,7 +59,9 @@
     <Compile Include="HatCharacter.cs" />
     <Compile Include="HatConfiguration.cs" />
     <Compile Include="HatServer.cs" />
+    <Compile Include="HatServer.ServerListener.cs" />
     <Compile Include="HatUser.cs" />
+    <Compile Include="ISynchronizable.cs" />
     <Compile Include="NetworkHelper.cs" />
     <Compile Include="PacketStructure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

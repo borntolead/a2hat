@@ -6,7 +6,7 @@ using libhat.DBFactory;
 
 namespace libhat {
     [Serializable]
-    public class GameServer :IEntity {
+    public class GameServer : IEntity, ICloneable, ISynchronizable {
         /// <summary>
         /// Server Name
         /// </summary>
@@ -45,6 +45,13 @@ namespace libhat {
         public string ServerName {
             get { return serverName; }
             set { serverName = value; }
+        }
+
+        private ServerType gameType;
+
+        public ServerType ServerType {
+            get { return gameType; }
+            set { gameType = value; }
         }
 
         #region IEntity Members
@@ -95,5 +102,52 @@ namespace libhat {
             get { return startTime; }
             set { startTime = value; }
         }
+
+        #region ICloneable Members
+
+        ///<summary>
+        ///Creates a new object that is a copy of the current instance.
+        ///</summary>
+        ///
+        ///<returns>
+        ///A new object that is a copy of this instance.
+        ///</returns>
+        ///<filterpriority>2</filterpriority>
+        public object Clone() {
+            GameServer srv = new GameServer();
+
+            srv.code = code;
+            srv.endPoint = endPoint;
+            srv.gameType = gameType;
+            srv.isActive = isActive;
+            srv.map = map;
+            srv.playersCount = playersCount;
+            srv.serverName = serverName;
+            srv.startTime = srv.startTime;
+
+            return srv;
+        }
+
+        #region ISynchronizable Members
+
+        /// <summary>
+        /// Merge THIS and inputObject.  
+        /// </summary>
+        /// <param name="inputObject"></param>
+        public void Merge( object inputObject ) {
+            GameServer gs = inputObject as GameServer;
+            
+            if ( gs == null ) {
+                return;
+            }
+
+            serverName = gs.serverName;
+            code = gs.Code;
+            endPoint = gs.endPoint;
+        }
+
+        #endregion
+
+        #endregion
     }
 }

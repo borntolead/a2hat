@@ -8,11 +8,12 @@ using System.Threading;
 using libhat.DBFactory;
 
 namespace libhat {
-    public class HatServer {
+    public partial class HatServer {
         public event EventHandler ClientConnected;
         private Thread listenClientsThread;
-        private Thread listenServersThread;
+        
         private IDBFactory factory;
+        private GameServer current = null;
 
         #region Critical lists
         List<GameServer> registeredServers = new List<GameServer>( );
@@ -110,6 +111,7 @@ namespace libhat {
         }
 
         private void HandleConnection( Socket handler ) {
+            
             byte[] buf = new byte[256];
             uint packetLength, unknown1;
             int bytesRec = 0; 
@@ -179,7 +181,25 @@ namespace libhat {
                 return GetServersList();
             }
 
-            return null;
+            if( packet is GameServer) {
+                
+                return serverWelcome();
+            }
+
+            return new byte[0];
+        }
+
+        private byte[] serverWelcome() {
+            byte[] ret = new byte[9];
+            using( MemoryStream mem = new MemoryStream( ret)) {
+                BinaryWriter bw = new BinaryWriter( mem );
+
+                bw.Write( (byte)0xD5 );
+                bw.Write( Consts.HatIdentifier );
+                bw.Write( 1 );
+            }
+
+            return ret;
         }
 
         private byte[] processClientMessage( Client_operation op, Client_message packet, byte[] message ) {
@@ -243,28 +263,29 @@ namespace libhat {
                 long begin = bw.BaseStream.Position;
 
                 lock ( registeredServers ) {
-                    char[] mess = String.Format( "CURRENTCOUNT|{0:D2}$BREAK\nTOTALSERVERS|{1:D2}$BREAK\n\n", servers.Count, registeredServers.Count ).ToCharArray(); 
+                    char[] mess = String.Format( "CURRENTCOUNT|{0:D2}$BREAK\nTOTALSERVERS|{1:D2}$BREAK\n\n", registeredServers.Count, registeredServers.Count ).ToCharArray(); 
                     bw.Write( mess );
-                }
-                
-                foreach ( GameServer server in servers ) {
-                    TimeSpan span = DateTime.Now - server.StartTime;
-                    IPEndPoint point = ( server.EndPoint as IPEndPoint ) ?? new IPEndPoint( IPAddress.Parse("127.0.0.1"), 8081);
 
-                    bw.Write( 
-                        String.Format( 
-                            "|[{0:D}:{1:F2}] {2}|1.02|{3}|{4:D}x{5:D}|{6:D}|{7:D}|{8}\n" 
-                            , span.Hours
-                            , span.Minutes
-                            , server.ServerName
-                            , server.Map.Name
-                            , server.Map.Width
-                            , server.Map.Height
-                            , server.Map.Difficulty
-                            , server.PlayersCount
-                            , point.Address
-                        )
-                    );
+
+                    foreach ( GameServer server in registeredServers ) {
+                        TimeSpan span = DateTime.Now - server.StartTime;
+                        IPEndPoint point = ( server.EndPoint as IPEndPoint ) ?? new IPEndPoint( IPAddress.Parse("127.0.0.1"), 8081);
+
+                        bw.Write( 
+                            String.Format( 
+                                "|[{0:D}:{1:F2}] {2}|1.02|{3}|{4:D}x{5:D}|{6:D}|{7:D}|{8}\n" 
+                                , span.Hours
+                                , span.Minutes
+                                , server.ServerName
+                                , server.Map.Name
+                                , server.Map.Width
+                                , server.Map.Height
+                                , server.Map.Difficulty
+                                , server.PlayersCount
+                                , point.Address
+                            )
+                        );
+                    }
                 }
                 bytesWritten = bw.BaseStream.Position - begin;
                 
@@ -299,15 +320,6 @@ namespace libhat {
         /// <returns></returns>
         private IList<GameServer> getServerList() {
             return factory.Lookup<GameServer>( new SelectAllCondition() );
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="handler"></param>
-        /// <param name="message"></param>
-        protected void SendPacketToClient( Socket handler, object message ) {
-            
         }
 
         protected bool LoginUser( string login, string password ) {
@@ -386,7 +398,62 @@ namespace libhat {
                         return Client_operation.M_GET_SERVER_LIST;
                         break;
                     }
-                default:
+                    case 0xD1: {
+                        //ident server
+                        br.BaseStream.Seek( 5, SeekOrigin.Begin );
+                        byte length = br.ReadByte();
+                        br.BaseStream.Seek( 1, SeekOrigin.Current );
+                        string addr = Encoding.Default.GetString( br.ReadBytes( length ) );
+                        string[] arr = addr.Split( ':' );
+
+                        EndPoint ep = new IPEndPoint( IPAddress.Parse( arr[0] ), Int32.Parse( arr[1] ) );
+
+                        GameServer srv = new GameServer();
+                        srv.EndPoint = ep;
+                        srv.Code = ep.ToString();
+
+                        //TODO: normal locks
+                        while ( true ) {
+                            if ( current == null ) {
+                                current = srv;
+                                break;
+                            }
+                            else {
+                                Thread.Sleep( 100 );
+                            }
+                        }
+                        return srv;
+                    }
+                    case 0xd2: {
+                        byte pcount = br.ReadByte();
+                        byte difficulty = br.ReadByte();
+                        byte srvType = br.ReadByte();
+                        byte mapSize = br.ReadByte();
+
+                        byte length = br.ReadByte();
+
+                        br.BaseStream.Seek( 1, SeekOrigin.Current );
+                        string mapName = Encoding.Default.GetString( br.ReadBytes( length ) );
+
+                        //TODO: normal locks
+                        while( true ) {
+                            if(current != null) {
+                                current.PlayersCount = pcount;
+                                current.ServerType = (ServerType)srvType;
+                                current.Map = new GameMap();
+                                current.Map.Difficulty = (Difficulty) difficulty;
+                                current.Map.Name = mapName;
+                                current.Map.Height = current.Map.Width = mapSize;
+                                registeredServers.Add( (GameServer)current.Clone() );
+                                current = null;
+                                break;
+                            }else {
+                                Thread.Sleep( 100 );
+                            }
+                        }
+                        break;
+                    }
+                    default:
                         ret = null;
                         NetworkHelper.DumpArray( Console.OpenStandardOutput(), decoded );
                         Console.WriteLine( Encoding.GetEncoding( 866 ).GetString( decoded ) );
