@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Db4objects.Db4o.Internal.Mapping;
 using libhat.DBFactory;
 
 namespace libhat {
@@ -17,6 +19,7 @@ namespace libhat {
 
         #region Critical lists
         List<GameServer> registeredServers = new List<GameServer>( );
+        private Dictionary<string, LoginPacket> loggedInUsers = new Dictionary<string, LoginPacket>();
         #endregion
 
         /// <summary>
@@ -120,7 +123,7 @@ namespace libhat {
                     bytesRec = handler.Receive( buf );
                 } catch( Exception ex) {
                     LogEvent( EventType.DEBUG, ex, "recieve failed" );
-                    Thread.CurrentThread.Abort( );
+                    break;
                 }
 
                 /// move it to separate process
@@ -134,12 +137,46 @@ namespace libhat {
                     Console.WriteLine( "packet recived\n length:{0}\n unknown1: {1}", packetLength, unknown1 );
 
                     byte[] decoded = new byte[packetLength];
+                    
                     Buffer.BlockCopy( buf,
                                       (int) br.BaseStream.Position,
                                       decoded, 0, (int) packetLength );
                     decoded = NetworkHelper.PacketDecoding( decoded );
                     NetworkHelper.DumpArray( Console.OpenStandardOutput(), decoded );
-                    object packet = PacketParse( decoded );
+
+                    object packet = null;
+                    try {
+                        packet = ClientPacketParse( decoded, handler );
+                    } catch(Exception ex) {
+                        LogEvent( EventType.ERROR, ex, "packet {0} was processed with errors. breaking connection");
+                        handler.Close( 5 );
+
+                        break;
+                    }
+
+                    if ( packet is ParseState ) {
+                        switch ( (ParseState)packet ) {
+                            case ParseState.SERVER_CONNECTED: {
+                                object[] parameters = new object[]{handler, buf};
+
+                                Thread listenServerThread = new Thread( serverInfoListener );
+                                listenServerThread.Start( parameters );
+                                
+                                break;
+                            }
+                            case ParseState.UNKNOWN_PACKET: {
+                                NetworkHelper.DumpArray( Console.OpenStandardOutput(), decoded );
+                                Console.WriteLine( Encoding.GetEncoding( 866 ).GetString( decoded ) );
+
+                                handler.Close( 5 );
+                                break;
+                            }
+                        }
+
+                        LogEvent( EventType.DEBUG, "{0} packet was got", packet.ToString() );
+                        break;
+                    }
+
                     byte[] response = ProcessPacket( packet );
 
                     Console.WriteLine( "response:" );
@@ -166,6 +203,17 @@ namespace libhat {
             if( packet is LoginPacket ) {
                 LoginPacket pack = (LoginPacket) packet;
                 if( LoginUser(pack.login, pack.password)) {
+                    
+                    lock(loggedInUsers) {
+                        LoginPacket gt;
+
+                        if( loggedInUsers.TryGetValue( pack.login, out gt ) ) {
+                            return processClientMessage( Client_operation.M_SEND_MESSAGE, Client_message.M_LOGIN_LOCKED, null );
+                        }
+
+                        loggedInUsers.Add( pack.login, pack );
+                    }
+
                     return GetCharacterList( pack );
                 } else {
                     return processClientMessage( Client_operation.M_SEND_MESSAGE, Client_message.M_INVALID_LOGIN_PASSWORD, null );
@@ -181,27 +229,9 @@ namespace libhat {
                 return GetServersList();
             }
 
-            if( packet is GameServer) {
-                
-                return serverWelcome();
-            }
-
             return new byte[0];
         }
-
-        private byte[] serverWelcome() {
-            byte[] ret = new byte[9];
-            using( MemoryStream mem = new MemoryStream( ret)) {
-                BinaryWriter bw = new BinaryWriter( mem );
-
-                bw.Write( (byte)0xD5 );
-                bw.Write( Consts.HatIdentifier );
-                bw.Write( 1 );
-            }
-
-            return ret;
-        }
-
+        
         private byte[] processClientMessage( Client_operation op, Client_message packet, byte[] message ) {
             int size = sizeof ( Byte ) + sizeof( Int32 ) + (message!= null ? message.Length : 0);
 
@@ -358,7 +388,7 @@ namespace libhat {
             return true;
         }
 
-        protected object PacketParse( byte[] decoded ) {
+        protected object ClientPacketParse( byte[] decoded, Socket handler ) {
             object ret = null;
 
             using ( MemoryStream mem = new MemoryStream( decoded ) ) {
@@ -399,64 +429,11 @@ namespace libhat {
                         break;
                     }
                     case 0xD1: {
-                        //ident server
-                        br.BaseStream.Seek( 5, SeekOrigin.Begin );
-                        byte length = br.ReadByte();
-                        br.BaseStream.Seek( 1, SeekOrigin.Current );
-                        string addr = Encoding.Default.GetString( br.ReadBytes( length ) );
-                        string[] arr = addr.Split( ':' );
-
-                        EndPoint ep = new IPEndPoint( IPAddress.Parse( arr[0] ), Int32.Parse( arr[1] ) );
-
-                        GameServer srv = new GameServer();
-                        srv.EndPoint = ep;
-                        srv.Code = ep.ToString();
-
-                        //TODO: normal locks
-                        while ( true ) {
-                            if ( current == null ) {
-                                current = srv;
-                                break;
-                            }
-                            else {
-                                Thread.Sleep( 100 );
-                            }
-                        }
-                        return srv;
-                    }
-                    case 0xd2: {
-                        byte pcount = br.ReadByte();
-                        byte difficulty = br.ReadByte();
-                        byte srvType = br.ReadByte();
-                        byte mapSize = br.ReadByte();
-
-                        byte length = br.ReadByte();
-
-                        br.BaseStream.Seek( 1, SeekOrigin.Current );
-                        string mapName = Encoding.Default.GetString( br.ReadBytes( length ) );
-
-                        //TODO: normal locks
-                        while( true ) {
-                            if(current != null) {
-                                current.PlayersCount = pcount;
-                                current.ServerType = (ServerType)srvType;
-                                current.Map = new GameMap();
-                                current.Map.Difficulty = (Difficulty) difficulty;
-                                current.Map.Name = mapName;
-                                current.Map.Height = current.Map.Width = mapSize;
-                                registeredServers.Add( (GameServer)current.Clone() );
-                                current = null;
-                                break;
-                            }else {
-                                Thread.Sleep( 100 );
-                            }
-                        }
-                        break;
+                        return ParseState.SERVER_CONNECTED;
                     }
                     default:
-                        ret = null;
-                        NetworkHelper.DumpArray( Console.OpenStandardOutput(), decoded );
-                        Console.WriteLine( Encoding.GetEncoding( 866 ).GetString( decoded ) );
+                        ret = ParseState.UNKNOWN_PACKET;
+                        
                         break;
                 }
             }
@@ -479,13 +456,16 @@ namespace libhat {
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
-        protected byte[] PrepareMessageToSend( byte[] message ) {
+        protected byte[] PrepareMessageToSend( byte[] mess ) {
+            byte[] message;
 
-            if( message == null ) {
-                throw new ArgumentNullException( "cannot send null packet" );
+            if( mess == null ) {
+                message = new byte[0];
+            } else {
+                message = mess;
             }
 
-            int packetLength = message.Length + Consts.PacketEnding.Length;
+            int packetLength = message.Length + Consts.PacketEnding.Length + 1;
 
             byte[] packet = new byte[8 + packetLength];
             byte[] encoded = new byte[packetLength];
@@ -493,8 +473,10 @@ namespace libhat {
             //compiling response
             using ( MemoryStream mem = new MemoryStream( encoded ) ) {
                 BinaryWriter bw = new BinaryWriter( mem );
-
-                bw.Write( message );
+                if ( message.Length != 0 ) {
+                    bw.Write( message );
+                    bw.Write( (byte) 0x00 );
+                }
 
                 bw.Write( Consts.PacketEnding );
 
