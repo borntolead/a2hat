@@ -59,4 +59,9 @@ namespace libhat {
         , Hard   = 3
         , Horror = 4
     }
+
+    public enum ParseState {
+        UNKNOWN_PACKET,
+        SERVER_CONNECTED
+    }
 }

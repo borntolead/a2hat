@@ -28,7 +28,7 @@ namespace libhat {
         /// <summary>
         /// Tail of any packet between hat and client
         /// </summary>
-        private static readonly byte[] packetEnding = new byte[] {0x0, 0x64, 0x1, 0x0,0x0,0x0 };
+        private static readonly byte[] packetEnding = new byte[] { 0x64, 0x1, 0x0,0x0,0x0 };
 
         /// <summary>
         /// Example of successful response. Encoded.
