@@ -76,6 +76,22 @@ namespace libhat.DBFactory {
                     result.AddRange( (IList<T>)res );
                     break;
                 }
+                case "LOOKUP_CHARACTER_BY_ID": {
+                    LookupCharacterByID cond = condition as LookupCharacterByID;
+
+                    if ( cond == null ) {
+                        throw new InvalidDataException( String.Format( "Invalid {0} condition", condition.Name ) );
+                    }
+
+                    if ( Equals( typeof( T ), typeof( HatCharacter ) ) == false ) {
+                        throw new ArgumentException();
+                    }
+
+                    IList<HatCharacter> res = dbInstance.Query<HatCharacter>( delegate( HatCharacter t ) { return cond.Id1 == t.Ids[0] && cond.Id2 == t.Ids[1]; } );
+
+                    result.AddRange( (IList<T>)res );
+                    break;       
+                }
                 default:
                     throw new NotImplementedException( String.Format( "Condition {0} is not implemented", condition.Name ) );
             }

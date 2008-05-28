@@ -6,11 +6,12 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using libhat.DBFactory;
 
 namespace libhat {
-    public partial class HatServer {
+    public sealed partial class HatServer {
         
-        protected virtual void serverInfoListener(object parameters) {
+        private void serverInfoListener(object parameters) {
             GameServer srv=null;
 
             object[] param = null;
@@ -115,10 +116,101 @@ namespace libhat {
                                 handler.Send( PrepareMessageToSend( null ) );
                                 break;
                         }
-                            case 0x64:
+                            case 0xd4: // arena results
+                            {
+                                LogEvent( EventType.DEBUG, "arena results not supported" );
                                 handler.Send( PrepareMessageToSend( null ) );
+
                                 break;
-                                default:
+                            }
+                            case 0xE0:{ // chr_recv update character
+
+                                    ///structure:
+                                    /// 0x00 - packet type
+                                    /// 0x01 - size
+                                    /// 0x02 - charID 1
+                                    /// 0x06 - charID 2
+                                    /// 0x0A - log_size
+                                    /// 0x0B - chr_size
+                                    /// 0x12 - characterData
+                                    /// 0x12 + chrSize - log_name
+
+                                    byte size = br.ReadByte();
+                                    if( size == 1) {
+                                        break;
+                                    }
+                                    Int32 characterID1 = br.ReadInt32();
+                                    Int32 characterID2 = br.ReadInt32();
+                                    Int32 logSize = br.ReadInt32();
+
+                                    byte chr_size = br.ReadByte();
+
+                                    byte[] chrData = br.ReadBytes( chr_size );
+                                    string loginIP = Encoding.Default.GetString( br.ReadBytes( logSize ) );
+
+                                    HatCharacter chr = factory.LookupFirst<HatCharacter>( new LookupCharacterByID( characterID1, characterID2 ) );
+
+                                    if ( chr == null ) {
+                                        chr = new HatCharacter();
+
+                                        chr.Ids[0] = characterID1;
+                                        chr.Ids[1] = characterID2;
+
+                                        chr.CharacterData = chrData;
+                                    } else {
+                                        chr.CharacterData = chrData;
+                                    }
+
+                                    factory.Save( chr );
+
+                                    break;
+                                }
+                            case 0xcf: // chr_recv return character
+                            {
+                                ///structure:
+                                /// 0x00 - packet type
+                                /// 0x01 - size
+                                /// 0x02 - charID 1
+                                /// 0x06 - charID 2
+                                /// 0x0A - log_size
+                                /// 0x0B - chr_size
+                                /// 0x12 - characterData
+                                /// 0x12 + chrSize - log_name
+
+                                byte size = br.ReadByte();
+                                Int32 characterID1 = br.ReadInt32();
+                                Int32 characterID2 = br.ReadInt32();
+                                Int32 logSize = br.ReadInt32();
+
+                                byte chr_size = br.ReadByte();
+
+                                byte[] chrData = br.ReadBytes( chr_size );
+                                string loginIP = Encoding.Default.GetString( br.ReadBytes( logSize ) );
+
+                                HatCharacter chr = factory.LookupFirst<HatCharacter>( new LookupCharacterByID(characterID1, characterID2) );
+
+                                if( chr == null ) {
+                                    chr = new HatCharacter();
+
+                                    chr.Ids[0] = characterID1;
+                                    chr.Ids[1] = characterID2;
+
+                                    chr.CharacterData = chrData;
+                                } else {
+                                    chr.CharacterData = chrData;
+                                }
+
+                                factory.Save( chr );
+
+                                handler.Send( PrepareMessageToSend( simpleServerEntrance( loginIP ) ) );
+
+                                break;
+                            }
+                            case 0xd8: // accept character
+                            case 0xd9: // reject character
+                            case 0xE1:// server reconnect
+                                default: //keep alive
+                                    handler.Send( PrepareMessageToSend( null ) );
                                 break;
                         }
                         
@@ -143,6 +235,90 @@ namespace libhat {
             }
 
             return ret;
+        }
+
+        /// <summary>
+        /// writing character to byte array
+        /// </summary>
+        /// <param name="chr"></param>
+        /// <returns></returns>
+        [Obsolete("not implemented", true)]
+        private byte[] serverEntrance(HatCharacter chr) {
+            throw new NotImplementedException( );
+
+            using( MemoryStream mem = new MemoryStream( )) {
+                int sectionSum = 0;
+                BinaryWriter bw = new BinaryWriter( mem );
+
+                bw.Write( 0x04507989 );
+
+                ///making 0xAAAAAAAA section
+                Stream csec = new MemoryStream();
+                {
+                    csec.SetLength( 0x34 );
+                    BinaryWriter wr = new BinaryWriter( csec );
+
+                    ///write character identify
+                    wr.Write( chr.Ids[0]);
+                    wr.Write( chr.Ids[1] );
+                    wr.Write( chr.HatID );
+
+                    ///writing character name
+
+                    wr.Write( chr.Nickname.ToCharArray( ) );
+                    if( String.IsNullOrEmpty(chr.Clan) == false) {
+                        wr.Write( '|' );
+                        wr.Write( chr.Clan.ToCharArray( ) );
+                        
+                    }
+                    wr.Write( (byte)0x00 );
+
+                    wr.BaseStream.Seek( 0x2c, SeekOrigin.Begin );
+
+                    ///writing character info
+                    wr.Write( chr.Sex );
+                    wr.Write( chr.Pic );
+                    wr.Write( chr.Unknown1 );
+                    wr.Write( chr.Unknown2 );
+                    wr.Write( chr.Unknown3 );
+
+                    sectionSum = ChecksumHelper.GetStreamChecksum( mem );
+                }
+                ///writing 0xAAAAAAAA section encrypted
+                int key = 0x0;
+                csec = CryptHelper.CharacterStreamCrypt( csec, key );
+                BinaryReader br = new BinaryReader( csec );
+
+                bw.Write( 0xAAAAAAAA );
+                bw.Write( csec.Length );
+                bw.Write( key << 16 );
+                bw.Write( sectionSum );
+                bw.Write( br.ReadBytes( (int)csec.Length ) );
+
+                csec.Dispose();
+            }
+
+            return new byte[0];
+        }
+
+        private byte[] simpleServerEntrance( string login_name) {
+            byte[] result = new byte[login_name.Length + 1 + 4 + 2 + 1];
+            using ( MemoryStream mem = new MemoryStream( result ) ) {
+                BinaryWriter bw = new BinaryWriter( mem );
+
+                bw.Write( (byte) 0xD3 );
+                bw.Write( 0x0 );
+                bw.Write( login_name.Length );
+                bw.Write( login_name.ToCharArray() );
+
+                bw.Flush();
+            }
+
+            return result;
+        }
+
+        private HatCharacter getCharacter(BinaryReader reader) {
+            throw new NotImplementedException( );
         }
     }
 }

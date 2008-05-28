@@ -71,4 +71,35 @@ namespace libhat {
 
         #endregion
     }
+
+    public class LookupCharacterByID : ICondition {
+        private Int32 id1;
+        private Int32 id2;
+        private string name;
+
+
+        public LookupCharacterByID( int id1, int id2 ) {
+            this.id1 = id1;
+            this.id2 = id2;
+        }
+
+
+        public int Id1 {
+            get { return id1; }
+            set { id1 = value; }
+        }
+
+        public int Id2 {
+            get { return id2; }
+            set { id2 = value; }
+        }
+
+        #region ICondition Members
+
+        public string Name {
+            get { return "LOOKUP_CHARACTER_BY_ID"; }
+        }
+
+        #endregion
+    }
 }

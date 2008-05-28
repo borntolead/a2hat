@@ -64,4 +64,9 @@ namespace libhat {
         UNKNOWN_PACKET,
         SERVER_CONNECTED
     }
+
+    public enum HatMode {
+        COMPATIBLE, 
+        NEW_CHARACTER_MANAGEMENT
+    }
 }

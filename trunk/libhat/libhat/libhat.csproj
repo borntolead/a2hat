@@ -49,7 +49,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChecksumHelper.cs" />
     <Compile Include="Consts.cs" />
+    <Compile Include="CryptHelper.cs" />
     <Compile Include="DBFactory\Condition.cs" />
     <Compile Include="DBFactory\Db4oFactory.cs" />
     <Compile Include="DBFactory\IDBInterface.cs" />
@@ -61,6 +63,7 @@
     <Compile Include="HatServer.cs" />
     <Compile Include="HatServer.ServerListener.cs" />
     <Compile Include="HatUser.cs" />
+    <Compile Include="InventoryItem.cs" />
     <Compile Include="ISynchronizable.cs" />
     <Compile Include="NetworkHelper.cs" />
     <Compile Include="PacketStructure.cs" />
