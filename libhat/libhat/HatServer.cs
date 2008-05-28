@@ -10,7 +10,7 @@ using Db4objects.Db4o.Internal.Mapping;
 using libhat.DBFactory;
 
 namespace libhat {
-    public partial class HatServer {
+    public sealed partial class HatServer {
         public event EventHandler ClientConnected;
         private Thread listenClientsThread;
         
@@ -113,6 +113,17 @@ namespace libhat {
             }
         }
 
+        private  HatUser GetCurrentUser() {
+            LocalDataStoreSlot slot = Thread.GetNamedDataSlot( "currentUser" );
+            return (HatUser)Thread.GetData( slot );
+        }
+
+        private  void SetCurrentUser(HatUser usr) {
+            LocalDataStoreSlot slot = Thread.GetNamedDataSlot( "currentUser" );
+
+            Thread.SetData( slot, usr);
+        }
+
         private void HandleConnection( Socket handler ) {
             
             byte[] buf = new byte[256];
@@ -199,7 +210,7 @@ namespace libhat {
         /// </summary>
         /// <param name="packet"> return response to recived packet</param>
         /// <returns></returns>
-        protected byte[] ProcessPacket( object packet ) {
+        private byte[] ProcessPacket( object packet ) {
             if( packet is LoginPacket ) {
                 LoginPacket pack = (LoginPacket) packet;
                 if( LoginUser(pack.login, pack.password)) {
@@ -255,7 +266,7 @@ namespace libhat {
         /// </summary>
         /// <param name="pack">user's credentials</param>
         /// <returns> byte array represents list of user's characters</returns>
-        protected byte[] GetCharacterList( LoginPacket pack ) {
+        private byte[] GetCharacterList( LoginPacket pack ) {
 
             IList<HatCharacter> characters = getCharacterList(pack.login);
 
@@ -279,7 +290,7 @@ namespace libhat {
         /// Gets registred and available servers list
         /// </summary>
         /// <returns></returns>
-        protected byte[] GetServersList () {
+        private byte[] GetServersList () {
             IList<GameServer> servers = getServerList();
 
             byte[] message = new byte[1+ 0xFF + servers.Count*0x64];
@@ -352,12 +363,16 @@ namespace libhat {
             return factory.Lookup<GameServer>( new SelectAllCondition() );
         }
 
-        protected bool LoginUser( string login, string password ) {
+        private bool LoginUser( string login, string password ) {
             HatUser u = factory.LookupFirst<HatUser>( new SelectByCodeCondition( login ) );
             if ( u != null && !u.IsLocked && !u.UserLoggedIn && u.Password == password ) {
                 //u.UserLoggedIn = true;
 
                 factory.Save<HatUser>( u );
+
+                LocalDataStoreSlot slot = Thread.GetNamedDataSlot( "currentUser" );
+
+                Thread.SetData( slot, u );
 
                 return true;
             }
@@ -369,12 +384,17 @@ namespace libhat {
                 //u.UserLoggedIn = true;
 
                 factory.Save<HatUser>( u );
+
+                LocalDataStoreSlot slot = Thread.GetNamedDataSlot( "currentUser" );
+
+                Thread.SetData( slot, u );
+
                 return true;
             }
             return false;
         }
 
-        protected bool LogoutUser( string login) {
+        private bool LogoutUser( string login) {
             HatUser u = factory.LookupFirst<HatUser>( new SelectByCodeCondition( login ) );
 
             if( u.UserLoggedIn == false ) {
@@ -388,7 +408,7 @@ namespace libhat {
             return true;
         }
 
-        protected object ClientPacketParse( byte[] decoded, Socket handler ) {
+        private object ClientPacketParse( byte[] decoded, Socket handler ) {
             object ret = null;
 
             using ( MemoryStream mem = new MemoryStream( decoded ) ) {
@@ -431,6 +451,69 @@ namespace libhat {
                     case 0xD1: {
                         return ParseState.SERVER_CONNECTED;
                     }
+                    case 0xCB: {
+                        // new character to server
+
+                        //                BODY  MIND  SKILL COLOR
+                        //                 |     |      |     |
+                        // ?? SIZE ID1 ID2 ?? ?? ?? ?? ?? ?? ?? ?? NICK SRV_IP
+                        //  |                 |     |     |      |
+                        // SIG              REACT SPIRIT PIC  NICK_SIZE 
+                        // 1   +4   +4  +4 +1 +1 +1 +1 +1 +1 +1 +1
+
+                        Int32 size = br.ReadInt32();
+                        Int32 id1 = br.ReadInt32();
+                        Int32 id2 = br.ReadInt32();
+                        byte body = br.ReadByte();
+                        byte react = br.ReadByte();
+                        byte mind = br.ReadByte();
+                        byte spirit = br.ReadByte();
+                        byte skill = br.ReadByte();
+                        byte picture = br.ReadByte();
+                        byte color = br.ReadByte();
+                        byte nickSize = br.ReadByte();
+                        string nickName = Encoding.Default.GetString( br.ReadBytes( nickSize ) );
+                        string clanName = "";
+                        string srvIP = Encoding.Default.GetString( br.ReadBytes( size - (int)br.BaseStream.Position ) );
+
+                        string[] nick = nickName.Split( '|' );
+                        nickName = nick[0];
+
+                        HatCharacter chr = new HatCharacter();
+                        chr.IDs[0] = id1;
+                        chr.IDs[1] = id2;
+                        chr.Clan = clanName;
+                        chr.Color = color;
+                        chr.Mind = mind;
+                        chr.Nickname = nickName;
+                        chr.ParentUser = (HatUser)Thread.GetData( Thread.GetNamedDataSlot( "currentUser" ) );
+                        
+                        bool hasPic = Array.Exists<byte>( Consts.Pics, delegate( byte pic ) { return pic == picture;} );
+                        
+                        if( hasPic ) {
+                            chr.Pic = picture;
+                        } else {
+                            chr.Pic = Consts.Pics[0];
+                        }
+
+                        chr.React = react;
+                        chr.Skill = skill;
+                        chr.Spirit = spirit;
+
+                        chr.SrvIP = srvIP;
+
+                        Db4oFactory.GetInstance().Save<HatCharacter>( chr );
+                        break;
+                    }
+                    case 0xCA: { //get character
+                        Int32 id1, id2;
+
+                        id1 = br.ReadInt32();
+                        id2 = br.ReadInt32();
+
+
+                        break;
+                    }
                     default:
                         ret = ParseState.UNKNOWN_PACKET;
                         
@@ -454,9 +537,9 @@ namespace libhat {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="mess"></param>
         /// <returns></returns>
-        protected byte[] PrepareMessageToSend( byte[] mess ) {
+        private byte[] PrepareMessageToSend( byte[] mess ) {
             byte[] message;
 
             if( mess == null ) {

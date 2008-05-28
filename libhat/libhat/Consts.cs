@@ -26,6 +26,23 @@ namespace libhat {
                 };
 
         /// <summary>
+        /// Available pictures for character
+        /// </summary>
+        private static byte[] pics = {
+				0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 
+				0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2F, 0x30, 0x31, 
+				0x32, 0x33, 0x34, 0x05, 0x02, 0x03, 0x04, 0x01, 
+				0x06, 0x07, 0x08, 0x09, 0x0A, 0x16, 0x17, 0x18, 
+				0x19, 0x1F, 
+				0x4F, 0x51, 0x52, 0x43, 0x42, 0x41, 0x44, 0x48, 
+				0x49, 
+				0x8B, 0x8C, 0x91, 0x81, 0x82, 0x83, 0x84, 0x85, 
+				0x86, 0x87, 0x8A, 
+				0xC6, 0xC8, 0xC9, 0xCF, 0xD0, 0xD2, 0xD4, 0xC1, 
+				0xC2, 0xC3, 0xC5,
+			};
+
+        /// <summary>
         /// Tail of any packet between hat and client
         /// </summary>
         private static readonly byte[] packetEnding = new byte[] { 0x64, 0x1, 0x0,0x0,0x0 };
@@ -51,14 +68,27 @@ namespace libhat {
             get { return packetEnding; }
         }
 
+        /// <summary>
+        /// maximal length of a single packet
+        /// </summary>
         public static int PacketMaxLength {
             get { return 0x8E ; }
         }
 
+        /// <summary>
+        /// hat identifier
+        /// </summary>
         public static Int32 HatIdentifier {
             get {
                 return 0x123;
             }
+        }
+
+        /// <summary>
+        /// Available pictures for character
+        /// </summary>
+        public static byte[] Pics {
+            get { return pics; }
         }
     }
 }
