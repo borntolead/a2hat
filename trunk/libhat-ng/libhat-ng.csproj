@@ -45,7 +45,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Consts.cs" />
+    <Compile Include="Entity\GameMap.cs" />
+    <Compile Include="Entity\GameServer.cs" />
+    <Compile Include="Entity\HatCharacter.cs" />
+    <Compile Include="Entity\HatUser.cs" />
+    <Compile Include="Hat.cs" />
+    <Compile Include="Helpers\CryptHelper.cs" />
+    <Compile Include="Helpers\NetworkHelper.cs" />
+    <Compile Include="Helpers\PacketParser.cs" />
+    <Compile Include="PacketEnum.cs" />
+    <Compile Include="Packets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Session.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
