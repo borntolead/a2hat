@@ -1,0 +1,8 @@
+2009-09-22  savant  <savant.d@gmail.com>
+
+	* Hat.cs:
+	* Packets.cs:
+	* Новая папка:
+	* libhat-ng.csproj:
+	* Helpers/PacketParser.cs: 
+

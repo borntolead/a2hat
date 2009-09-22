@@ -12,17 +12,13 @@ namespace libhat_ng
         /// <param name="data"></param>
         void ParseData(byte[] data);
 
-        void Execute();
-        
-        /// <summary>
-        /// Build byte array from packet fields
-        /// </summary>
-        /// <returns></returns>
-        byte[] GetResponse();
-        
-        int PacketID{
-            get;
-        }
+		/// <summary>
+		/// Process parsed data and returns unencrypted response 
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.Byte"/> unencrypted response
+		/// </returns>
+        byte[] Execute();
     }
 
     public class LoginCommand : ICommand
@@ -40,11 +36,6 @@ namespace libhat_ng
                 {
                     var packetid = reader.ReadByte();
 
-                    if( packetid != PacketID )
-                    {
-                        throw new ArgumentException("Invalid data");
-                    }
-
                     var loginlen = reader.ReadByte();
                     GameType = (GameType)reader.ReadInt16();
                     var loginOffset = reader.ReadByte();
@@ -58,24 +49,19 @@ namespace libhat_ng
             }
         }
 
-        public byte[] GetResponse()
+        public byte[] Execute()
         {
-            return null;
-        }
-
-        public int PacketID
-        {
-            get { return 0xc9; }
-        }
-
-        public void Execute()
-        {
-            
+            // search login into database
+			
+			// if found, then return account data 
+			// else return fail or create new account.
         }
     }
 
     public class UnknownCommand: ICommand
     {
+		int packetID;		
+		
         public void ParseData(byte[] data)
         {
             
@@ -89,11 +75,6 @@ namespace libhat_ng
         public byte[] GetResponse()
         {
             return null;
-        }
-
-        public int PacketID
-        {
-            get { return 0xFF; }
-        }
+        }        
     }
 }

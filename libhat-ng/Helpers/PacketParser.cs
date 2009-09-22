@@ -8,7 +8,7 @@ namespace libhat_ng.Helpers
 {
     internal class PacketParser
     {
-        ICommand Parse( byte[] data )
+        public static ICommand Parse( byte[] data )
         {
             ICommand response = null;
 

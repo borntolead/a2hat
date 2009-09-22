@@ -1,4 +1,5 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -14,6 +15,7 @@
     <OldToolsVersion>2.0</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,19 +35,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BerkeleyDb.Utils45, Version=0.8.1.25566, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="BerkeleyDb.Utils45, Version=0.8.1.25566, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Libs\BerkeleyDb.Utils45.dll</HintPath>
     </Reference>
-    <Reference Include="Db4objects.Db4o, Version=6.4.38.10595, Culture=neutral, PublicKeyToken=6199cd4f203aa8eb, processorArchitecture=MSIL">
+    <Reference Include="Db4objects.Db4o, Version=6.4.38.10595, Culture=neutral, PublicKeyToken=6199cd4f203aa8eb">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Libs\db4o\Db4objects.Db4o.dll</HintPath>
     </Reference>
-    <Reference Include="Kds.Serialization, Version=0.8.1.25565, Culture=neutral, PublicKeyToken=07e6449d79bffb34, processorArchitecture=MSIL">
+    <Reference Include="Kds.Serialization, Version=0.8.1.25565, Culture=neutral, PublicKeyToken=07e6449d79bffb34">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Libs\Kds.Serialization.dll</HintPath>
     </Reference>
-    <Reference Include="libdb_dotNET45, Version=0.9.5.25563, Culture=neutral, PublicKeyToken=0f0d57806cebdc08, processorArchitecture=MSIL">
+    <Reference Include="libdb_dotNET45, Version=0.9.5.25563, Culture=neutral, PublicKeyToken=0f0d57806cebdc08">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Libs\libdb_dotNET45.dll</HintPath>
     </Reference>
