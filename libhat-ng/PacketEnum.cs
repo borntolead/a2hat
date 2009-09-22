@@ -20,7 +20,7 @@ namespace libhat_ng
         COOPERATIVE = 0x02
     }
 
-    enum Client_message
+    public enum ClientMessage
     {
         M_ALL_OK = 0x00,
         M_SERVER_ERROR = 0x03,//4: Невозможно подключиться к серверу. Проверьте правильность URL.
@@ -53,11 +53,11 @@ namespace libhat_ng
         M_LOGIN_LOCKED_TRY_AGAIN = 0x15,// M_LOGIN_LOCKED; // Добавить сообщение о повторной попытке 
     };
 
-    enum Client_operation
+    public enum ClientOperation
     {
-        M_CHECK_NICKNAME = 0xDF,
-        M_SEND_MESSAGE = 0x0B,
-        M_GET_SERVER_LIST = 0xC8
+        CheckNickname = 0xDF,
+        SendMessage = 0x0B,
+        GetServerList = 0xC8
     }
 
     public enum Difficulty
