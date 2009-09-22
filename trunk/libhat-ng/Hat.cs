@@ -65,7 +65,10 @@ namespace libhat_ng
             {
                 var decoded = NetworkHelper.PacketDecoding(state.buffer);
 
-                var command = PacketParser.Parse;
+                var command = PacketParser.Parse( decoded );
+				
+				command.Execute();
+				
             }
         }
     }
