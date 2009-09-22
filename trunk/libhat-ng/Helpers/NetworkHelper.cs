@@ -1,15 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using log4net;
 
 namespace libhat_ng.Helpers
 {
     public class NetworkHelper {
         public static Socket GetNewSocket (ProtocolType type, EndPoint ep) {
-            Socket sock = new Socket( AddressFamily.InterNetwork, SocketType.Stream, type );
+            var sock = new Socket( AddressFamily.InterNetwork, SocketType.Stream, type );
 
             sock.Bind( ep );
             return sock;
@@ -54,12 +54,30 @@ namespace libhat_ng.Helpers
             tw.WriteLine( "--------------------------------End Dump---------------------------------" );
             tw.Flush();
         }
+        
+        public static void DumpArray(byte[] array)
+        {
+            using (var mem = new MemoryStream())
+            {
+                var logger = LogManager.GetLogger("UnknownPackets");
+
+                DumpArray(mem, array);
+                mem.Seek(0, SeekOrigin.Begin);
+
+                var tr = new StreamReader(mem);
+
+                logger.Debug(tr.ReadToEnd());
+
+                tr.Close();
+            }
+
+        }
 
         public static byte[] PacketEncoding(byte[] incoming, long offset) {
-            byte[] encoded = new byte[incoming.Length];
+            var encoded = new byte[incoming.Length];
             int k = 0;
-            for ( long i = offset; k < incoming.Length; i++ ) {
-                int l = k < Consts.Passphrase.Length ? k : k % Consts.Passphrase.Length;
+            for ( var i = offset; k < incoming.Length; i++ ) {
+                var l = k < Consts.Passphrase.Length ? k : k % Consts.Passphrase.Length;
                 encoded[k] = (byte)( incoming[i] ^ Consts.Passphrase[l] );
                 k++;
             }
@@ -68,13 +86,13 @@ namespace libhat_ng.Helpers
         }
 
         public static byte[] PacketDecoding( byte[] incoming, long offset ) {
-            byte[] decoded = new byte[incoming.Length];
+            var decoded = new byte[incoming.Length];
 
             if( incoming.Length > 80 ) {
-                throw new ArgumentOutOfRangeException( "incoming packet length must be <= 80" );
+                throw new ArgumentOutOfRangeException("incoming", "incoming packet length must be <= 80");
             }
 
-            int k = 0;
+            var k = 0;
             for ( long i = offset; k < incoming.Length; i++ ) {
                 decoded[k] = (byte)( incoming[i] ^ Consts.Passphrase[k] );
                 k++;
@@ -90,5 +108,36 @@ namespace libhat_ng.Helpers
         public static byte[] PacketDecoding( byte[] incoming ) {
             return PacketEncoding( incoming, 0 );
         }
+
+        /// <summary>
+        /// build response byte array
+        /// </summary>
+        /// <param name="operation">Client operation to response</param>
+        /// <param name="message">Type of response</param>
+        /// <param name="response">message to client</param>
+        /// <returns></returns>
+        public static byte[] ClientMessageBuild(ClientOperation operation, ClientMessage message, byte[] response)
+        {
+            using (var mem = new MemoryStream())
+            {
+                var writer = new BinaryWriter(mem);
+
+                writer.Write((byte)operation);
+                writer.Write((Int32)message);
+                
+                if( response != null && response.Length > 0)
+                {
+                    writer.Write(response);
+                }
+
+                writer.Flush();
+                return mem.ToArray();
+            }
+        }
+        public static byte[] ClientMessageBuild(ClientOperation operation, ClientMessage message)
+        {
+            return ClientMessageBuild(operation, message, null);
+        }
+
     }
 }

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using libhat_ng.Entity;
+using libhat_ng.Helpers;
 
 namespace libhat_ng
 {
@@ -55,21 +58,38 @@ namespace libhat_ng
 			
 			// if found, then return account data 
 			// else return fail or create new account.
+
+            var characters = new List<object>();
+
+            var chars = new byte[characters.Count * 8 + 9];
+            using (var mem = new MemoryStream(chars))
+            {
+                var bw = new BinaryWriter(mem);
+
+                bw.Write((byte)0xCE);
+                bw.Write((characters.Count * 8) + 4);
+                bw.Write(Consts.HatIdentifier);
+                foreach (var user in characters)
+                {
+                    //bw.Write(user.CharacterID);
+                }
+
+                return chars;
+            }
+            //return NetworkHelper.ClientMessageBuild(ClientOperation.CheckNickname, ClientMessage.M_ALL_OK,null);
         }
     }
 
     public class UnknownCommand: ICommand
     {
-		int packetID;		
-		
-        public void ParseData(byte[] data)
+		public void ParseData(byte[] data)
         {
-            
+            NetworkHelper.DumpArray(data);
         }
 
-        public void Execute()
+        public byte[] Execute()
         {
-            
+            return null;
         }
 
         public byte[] GetResponse()
