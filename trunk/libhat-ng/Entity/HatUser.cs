@@ -1,29 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace libhat_ng.Entity
 {
     [Serializable]
     public class HatUser {
-        public string Login {
-            get;
-            set;
+    	
+    	private string login;
+        private string password;
+        
+    	public string Login {
+    		get{ return login; }
+    		set{ login = value; }
         }
 
         public string Password {
-            get;
-            set;
+            get{ return password; }
+    		set{ password = value; }
         }
 
-        public bool IsLocked {
-            get;
-            set;
+        public bool IsLocked() {
+           return false;
         }
-
-        public bool UserLoggedIn {
-            get;
-            set;
+		
+    	public bool IsLoggedIn () {
+            return false;
         }
     }
 }
