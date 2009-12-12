@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FFB65EF8-8EE8-492F-AA0D-8D0FDD92EA59}"
 	ProjectSection(SolutionItems) = preProject
 		..\docs\hat_account_info.txt = ..\docs\hat_account_info.txt
@@ -10,54 +10,66 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libhat_old", "libhat\libhat\libhat_old.csproj", "{46EA71C1-E445-43DB-B642-611B1875DBB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "simpleListener", "simpleListener\simpleListener.csproj", "{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libhat.Testing", "libhat.Testing\libhat.Testing.csproj", "{AFDEA22E-7B39-47BA-B92F-027F271CD736}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libhat-ng", "libhat-ng\libhat-ng.csproj", "{474E474B-EAA6-486A-83B3-6A63C794B19F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libhat-ng.Testing", "libhat-ng.Testing\libhat-ng.Testing.csproj", "{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}"
 EndProject
-Project("{9344bdbb-3e7f-41fc-a0dd-8665d75ee146}") = "Packages", "Packages.mdproj", "{2D51D62C-031C-4A13-9A82-49E18DA9B6E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bdb.test", "bdb.test\bdb.test.csproj", "{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}"
 EndProject
 Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2D51D62C-031C-4A13-9A82-49E18DA9B6E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2D51D62C-031C-4A13-9A82-49E18DA9B6E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2D51D62C-031C-4A13-9A82-49E18DA9B6E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2D51D62C-031C-4A13-9A82-49E18DA9B6E2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{46EA71C1-E445-43DB-B642-611B1875DBB9}.Release|x86.ActiveCfg = Release|Any CPU
 		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{474E474B-EAA6-486A-83B3-6A63C794B19F}.Release|x86.ActiveCfg = Release|Any CPU
 		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AFDEA22E-7B39-47BA-B92F-027F271CD736}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3A7FCDB-2B1C-4E70-940D-59DFDAB9A069}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7137DFE0-44EE-4DE0-A2C4-75AC8E9E7201}.Release|x86.ActiveCfg = Release|Any CPU
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Debug|x86.ActiveCfg = Debug|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Debug|x86.Build.0 = Debug|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Release|Any CPU.ActiveCfg = Release|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Release|Mixed Platforms.Build.0 = Release|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Release|x86.ActiveCfg = Release|x86
+		{29CB50FA-CFF9-4127-B2A7-78BC89725EAA}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		version = 0.1
 		StartupItem = libhat\libhat\libhat_old.csproj
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace libhat {
     public enum GameType {
-          Normal      = 0x00
+          Normal      = 0x0000
         , Arena       = 0x0300
         , Cooperative = 0x0200
     }
