@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using libhat_ng.Entity;
 using libhat_ng.Helpers;
 
 namespace libhat_ng
@@ -11,7 +12,7 @@ namespace libhat_ng
     {
         public static ManualResetEvent done = new ManualResetEvent(false);
         public EndPoint Address{ get; set; }
-
+        public static HatConfiguration configuration = new HatConfiguration(); 
         public void Start()
         {
             try
@@ -63,12 +64,17 @@ namespace libhat_ng
 
             if (bytesRead > 0)
             {
-                var decoded = NetworkHelper.PacketDecoding(state.buffer);
+                try
+                {
+                    var decoded = NetworkHelper.PacketDecoding(state.buffer);
 
-                var command = PacketParser.Parse( decoded );
-				
-				command.Execute();
-				
+                    var command = PacketParser.Parse(decoded);
+
+                    var response = command.Execute();
+                } catch( InvalidPacketException ex)
+                {
+                    
+                }
             }
         }
     }

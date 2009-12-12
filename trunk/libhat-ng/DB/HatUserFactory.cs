@@ -8,6 +8,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -28,15 +29,15 @@ namespace libhat_ng.DB
 			string path;
 			
 			try{
-				path = System.Configuration.ConfigurationSettings.AppSettings["db_path"];
+				path = ConfigurationSettings.AppSettings["db_path"];
 			} catch( Exception ex ) {
 				throw new System.IO.FileNotFoundException ("db_path setting not found", ex );				
 			}
 			
 			try{
-				HashDatabaseConfig cfg = new HashDatabaseConfig();
-				cfg = new HashDatabaseConfig();
-	            cfg.Duplicates = DuplicatesPolicy.NONE;
+				var cfg = new HashDatabaseConfig();
+				
+	            cfg.Duplicates = DuplicatesPolicy.SORTED;
 	            cfg.ErrorPrefix = "HatUserFactoryError_";
 	            cfg.Creation = CreatePolicy.IF_NEEDED;
 	            cfg.CacheSize = new CacheInfo(0, 64 * 1024, 1);
@@ -91,10 +92,26 @@ namespace libhat_ng.DB
 		
 		public HatUser LoadOne(object criteria)
 		{
-			throw new NotImplementedException();
+            HatUser user = null;
+		    var key = criteria as byte[];
+
+            if( key == null ) return user;
+
+		    var c = db.Cursor();
+
+            if( c.Move(new DatabaseEntry(key), true ))
+            {
+                var data = c.Current.Value.Data;
+                
+                BinaryFormatter bf = new BinaryFormatter();
+                using ( MemoryStream mem = new MemoryStream( data ) ) {
+                    user = bf.Deserialize( mem ) as HatUser;
+                }
+
+            }
+
+		    return user;
 		}		
-		
-		
 		
 		public void Dispose()
 		{
