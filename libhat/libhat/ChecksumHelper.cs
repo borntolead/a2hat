@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using libhat.BE;
 
 namespace libhat {
     public static class ChecksumHelper {
@@ -51,7 +52,7 @@ namespace libhat {
 
         public static Int32 GetChecksum(HatCharacter chr) {
             Int32 sum = 0;
-            AddValue( sum, chr.MonsterKills );
+            /*AddValue( sum, chr.MonsterKills );
             AddValue( sum, chr.PlayerKills );
             AddValue( sum, chr.TotalKills );
             AddValue( sum, chr.DeathCount );
@@ -70,7 +71,7 @@ namespace libhat {
 
             sum += ( ( chr.AstralEx & 0x000000ff ) >> 0 ) << 1;
             sum += ( ( chr.AstralEx & 0x0000ff00 ) >> 8 ) << 1;
-            sum += ( ( chr.AstralEx & 0x00ff0000 ) >> 16 );
+            sum += ( ( chr.AstralEx & 0x00ff0000 ) >> 16 );*/
 
             return sum;
         }

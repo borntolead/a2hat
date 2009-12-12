@@ -9,14 +9,14 @@ using libhat;
 namespace simpleListener {
     class Program {
         static void Main( string[] args ) {
-            using ( System.IO.MemoryStream mem = new System.IO.MemoryStream( Consts.SuccessfulResponse ) ) {
+            using ( var mem = new System.IO.MemoryStream( Consts.SuccessfulResponse ) ) {
                 mem.Seek( 0, System.IO.SeekOrigin.Begin );
-                System.IO.BinaryReader br = new System.IO.BinaryReader( mem );
+                var br = new System.IO.BinaryReader( mem );
 
-                uint pl = br.ReadUInt32();
+                var pl = br.ReadUInt32();
                 br.ReadUInt32();
 
-                byte[] decoded = new byte[pl];
+                var decoded = new byte[pl];
                 Buffer.BlockCopy( Consts.SuccessfulResponse,
                                   (int) br.BaseStream.Position,
                                   decoded, 0, (int) pl );
@@ -25,8 +25,8 @@ namespace simpleListener {
                 NetworkHelper.DumpArray( Console.OpenStandardOutput( ), decoded );
             }
            
-            HatServer srv = new HatServer();
-            srv.EventOccured += new HatEvent( srv_EventOccured );
+            var srv = new HatServer();
+            srv.EventOccured += srv_EventOccured;
             srv.Start( "127.0.0.1", 8000 );
         }
 
