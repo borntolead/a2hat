@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -27,6 +28,11 @@ namespace libhat_ng.Entity
 		
     	public bool IsLoggedIn () {
             return false;
+        }
+
+        public List<HatCharacter> GetCharacters()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -5,13 +5,8 @@ namespace libhat_ng.Entity
     [Serializable]
     public class HatCharacter {
 
-        /// <summary>
-        /// Parent hat user
-        /// </summary>
-        public HatUser User
-        {
-            get; set;
-        }
+
+        public UInt64 CharacterId{ get; set;}
 
         public byte[] CharacterValue
         {

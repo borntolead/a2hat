@@ -17,8 +17,23 @@ namespace libhat_ng.DB
 	public interface IFactory<T>
 	{
 		void Save(T obj);
-		IList<T> Load(object criteria);
+		IList<T> Load();
 		T LoadOne(object criteria);
 		void Remove(T obj );
+	    IList<T> Search(ICriteria criteria);
 	}
+
+    public interface ICriteria
+    {
+        
+    }
+
+    [Flags]
+    public enum CriteriaOperations
+    {
+        Equal,
+        NotEqual,
+        More,
+        Less
+    }
 }
