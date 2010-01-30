@@ -1,6 +1,6 @@
 ﻿/*
  * Created by SharpDevelop.
- * User: Масяня
+ * User: savant
  * Date: 06.12.2009
  * Time: 17:29
  * 
@@ -17,10 +17,9 @@ namespace libhat_ng.DB
 	public interface IFactory<T>
 	{
 		void Save(T obj);
-		IList<T> Load();
+        IList<T> Load( object criteria );
 		T LoadOne(object criteria);
 		void Remove(T obj );
-	    IList<T> Search(ICriteria criteria);
 	}
 
     public interface ICriteria

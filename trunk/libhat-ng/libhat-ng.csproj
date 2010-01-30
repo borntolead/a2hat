@@ -80,9 +80,9 @@
     <Compile Include="Entity\GameMap.cs" />
     <Compile Include="Entity\GameServer.cs" />
     <Compile Include="Entity\HatCharacter.cs" />
-    <Compile Include="Entity\HAtConfiguration.cs" />
     <Compile Include="Entity\HatUser.cs" />
     <Compile Include="Hat.cs" />
+    <Compile Include="HatConfiguration.cs" />
     <Compile Include="Helpers\CryptHelper.cs" />
     <Compile Include="Helpers\NetworkHelper.cs" />
     <Compile Include="Helpers\PacketParser.cs" />
