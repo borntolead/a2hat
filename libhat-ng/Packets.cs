@@ -23,7 +23,7 @@ namespace libhat_ng
 		/// <returns>
 		/// A <see cref="System.Byte"/> unencrypted response
 		/// </returns>
-        byte[] Execute();
+        byte[] Execute( HatContext context);
     }
 
     public class LoginCommand : ICommand {
@@ -50,7 +50,7 @@ namespace libhat_ng
             }
         }
 
-        public byte[] Execute() {
+        public byte[] Execute(HatContext context) {
             // search login into database
 
             // if found, then return account data 
@@ -70,7 +70,7 @@ namespace libhat_ng
                 }
             } else
             {
-                if (Hat.configuration.CreateAccountsAutomaticaly)
+                if (Hat.Configuration.IsRegistrationAllowed)
                 {
                     u = new HatUser();
 
@@ -89,6 +89,8 @@ namespace libhat_ng
                 }
             }
 
+            context.User = u;
+
             var characters = u.GetCharacters();
             
             var chars = new byte[characters.Count*8 + 9];
@@ -101,7 +103,7 @@ namespace libhat_ng
                 bw.Write(Consts.HatIdentifier);
                 foreach (var user in characters)
                 {
-                    //bw.Write();
+                    bw.Write(user.CharacterId);
                 }
 
                 return chars;
@@ -109,14 +111,39 @@ namespace libhat_ng
         }
     }
 
-        public class UnknownCommand: ICommand
+    public class NewCharacterCommand : ICommand {
+        private HatCharacter character = null;
+
+        public void ParseData( byte[] data ) {
+            using ( var mem = new MemoryStream( data ) ) {
+
+                mem.Seek( 0, SeekOrigin.Begin );
+                using ( var reader = new BinaryReader( mem ) ) {
+                    character = new HatCharacter();
+
+                    Int32 size = reader.ReadInt32();
+                    character.CharacterId = reader.ReadInt64();
+                    character.CharacterValue = reader.ReadBytes(size - 8);
+                }
+            }
+        }
+
+        public byte[] Execute( HatContext context ) {
+            if( context == null || context.User == null ) return null;
+
+            HatUser user = context.User;
+
+        }
+    }
+
+    public class UnknownCommand: ICommand
     {
 		public void ParseData(byte[] data)
         {
             NetworkHelper.DumpArray(data);
         }
 
-        public byte[] Execute()
+        public byte[] Execute(HatContext context)
         {
             return null;
         }
